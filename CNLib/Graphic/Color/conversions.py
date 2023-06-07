@@ -98,3 +98,136 @@ def endian_to_rgba(color: int) -> tuple:
     alpha: int = color & 0xFF
 
     return (red, green, blue, alpha)
+
+def rgb_to_gray(r: int, g: int, b: int, wheighted: bool = True) -> tuple:
+    if (not wheighted):
+        return (((r + g + b) / 3,) * 3)
+    else:
+        return ((0.299 * r + 0.587 * g + 0.114 * b,) * 3)
+
+def rgb_to_sepia(r: int, g: int, b: int):
+    return (
+        min((r * 0.393) + (g * 0.769) + (b * 0.189), 255),
+        min((r * 0.349) + (g * 0.686) + (b * 0.168), 255),
+        min((r * 0.272) + (g * 0.534) + (b * 0.131), 255)
+    )
+
+def hue_to_rgb(p: float, q: float, t: float) -> int:
+    if (t < 0):
+        t += 1
+    if (t > 1):
+        t -= 1
+    if (t < 1 / 6):
+        return (p + (q - p) * 6 * t)
+    if (t < 1 / 2):
+        return (q)
+    if (t < 2 / 3):
+        return (p + (q - p) * (2 / 3 - t) * 6)
+    return (p)
+
+def rgb_to_hsl(r: int, g: int, b: int) -> tuple:
+    r, g, b = [i / 255.0 for i in (r, g, b)]
+
+    max_val: int = max(r, g, b)
+    min_val: int = min(r, g, b)
+    delta: int = max_val - min_val
+
+    if (delta == 0):
+        h: int = 0
+    elif (max_val == r):
+        h: float = ((g - b) / delta) % 6
+    elif (max_val == g):
+        h: float = ((b - r) / delta + 2)
+    else:
+        h: float = ((r - g) / delta + 4)
+
+    h *= 60
+    l: float = (max_val + min_val) / 2
+    s: float = 0 if delta == 0 else delta / (1 - abs(2 * l - 1))
+
+    return (h, s * 100, l * 100)
+
+def hsl_to_rgb(h: int, s: int, l: int) -> tuple:
+    h /= 360.0
+    s /= 100.0
+    l /= 100.0
+
+    if s == 0:
+        r, g, b = l, l, l
+    else:
+        q: float = l * (1 + s) if l < 0.5 else l + s - l * s
+        p: float = 2 * l - q
+
+        r: float = hue_to_rgb(p, q, h + 1 / 3)
+        g: float = hue_to_rgb(p, q, h)
+        b: float = hue_to_rgb(p, q, h - 1 / 3)
+
+    return (r * 255, g * 255, b * 255)
+
+def rgb_to_hsv(r: int, g: int, b: int) -> tuple:
+    r, g, b = [i / 255.0 for i in (r, g, b)]
+
+    max_val: int = max(r, g, b)
+    min_val: int = min(r, g, b)
+    delta: int = max_val - min_val
+
+    if (delta == 0):
+        h: int = 0
+    elif (max_val == r):
+        h: float = ((g - b) / delta) % 6
+    elif (max_val == g):
+        h: float = ((b - r) / delta + 2)
+    else:
+        h: float = ((r - g) / delta + 4)
+
+    h *= 60
+    v: float = max_val
+    s: float = 0 if max_val == 0 else delta / max_val
+
+    return (h, s * 100, v * 100)
+
+def hsv_to_rgb(h: int, s: int, v: int) -> tuple:
+    h /= 60.0
+    s /= 100.0
+    v /= 100.0
+
+    i: int = int(h)
+    f: float = h - i
+
+    p: float = v * (1 - s)
+    q: float = v * (1 - s * f)
+    t: float = v * (1 - s * (1 - f))
+
+    if (i == 0):
+        r, g, b = v, t, p
+    elif (i == 1):
+        r, g, b = q, v, p
+    elif (i == 2):
+        r, g, b = p, v, t
+    elif (i == 3):
+        r, g, b = p, q, v
+    elif (i == 4):
+        r, g, b = t, p, v
+    else:
+        r, g, b = v, p, q
+
+    return (r * 255, g * 255, b * 255)
+
+def rgb_to_cmyk(r: int, g: int, b: int) -> tuple:
+    r, g, b = [i / 255.0 for i in (r, g, b)]
+
+    k: int = 1 - max(r, g, b)
+    c: float = (1 - r - k) / (1 - k) if k < 1 else 0
+    m: float = (1 - g - k) / (1 - k) if k < 1 else 0
+    y: float = (1 - b - k) / (1 - k) if k < 1 else 0
+
+    return (c * 100, m * 100, y * 100, k * 100)
+
+def cmyk_to_rgb(c: int, m: int, y: int, k: int) -> tuple:
+    c, m, y, k = [i / 100.0 for i in (c, m, y, k)]
+
+    r: float = (1 - c) * (1 - k)
+    g: float = (1 - m) * (1 - k)
+    b: float = (1 - y) * (1 - k)
+
+    return (r * 255, g * 255, b * 255)
