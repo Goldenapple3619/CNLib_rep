@@ -1,4 +1,5 @@
 from typing import Callable
+from re import match
 
 def round_list(__obj: list, __ndigit: int = None) -> None:
     for i, item in enumerate(__obj):
@@ -46,6 +47,14 @@ def mod_list(__obj: list, returned_obj: Callable = int) -> int:
         result %= item
     return (result)
 
+def exclude_list(__obj: list, pattern: str) -> None:
+    shift: int = 0
+
+    for i, item in enumerate(__obj.copy()):
+        if (not match(pattern, str(item))):
+            __obj.pop(i - shift)
+            shift += 1
+
 class PrototypedList(list):
     round = round_list
     __round__ = round_list
@@ -56,3 +65,4 @@ class PrototypedList(list):
     div = div_list
     floor_div = div_floor_list
     mod = mod_list
+    exclude = exclude_list
